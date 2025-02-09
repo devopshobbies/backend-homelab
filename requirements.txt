@@ -1,0 +1,15 @@
+# FastAPI and Uvicorn
+fastapi
+uvicorn
+python-dotenv
+
+# Piccolo
+piccolo[all]
+
+# Piccolo Admin
+piccolo_admin
+
+
+# testing
+httpx
+pytest
