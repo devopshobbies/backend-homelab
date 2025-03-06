@@ -150,12 +150,21 @@ jobs:
         env:
           KUBECONFIG_FILE: ${{ secrets.KUBECONFIG_FILE }}
 
+      - name: Generate docker compose with version
+        uses: rondefreitas/jinja2-action@v1.2.3
+        with:
+          template: .kubernetes/backend-homelab-k8s-manifest.yml.j2
+          output_file: backend-homelab-k8s-manifest.yml
+          strict: true
+          variables: |
+            image=${{ env.REGISTRY }}/${{ env.IMAGE_NAME }}:${{ needs.build_and_push_image.outputs.version }}
+
       - name: Deploy to Kubernetes
         uses: azure/setup-kubectl@v3
 
       - name: Apply Kubernetes manifests
         run: |
-          sed -i "s|image:.*|image: ${{ secrets.DOCKER_USERNAME }}/my-app:${{ steps.version.outputs.version }}|" k8s-manifest.yaml
-          kubectl apply -f k8s-manifest.yaml --kubeconfig=kubeconfig
+          sed -i "s|image:.*|image: ${{ secrets.DOCKER_USERNAME }}/my-app:${{ steps.version.outputs.version }}|" backend-homelab-k8s-manifest.yml
+          kubectl apply -f backend-homelab-k8s-manifest.yml --kubeconfig=kubeconfig
         env:
           KUBECONFIG: ${{ secrets.KUBECONFIG_FILE }}

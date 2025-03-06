@@ -1,0 +1,175 @@
+apiVersion: v1
+kind: ConfigMap
+metadata:
+  name: backend-homelab-config
+  namespace: dev
+data:
+  POSTGRES_DB: fastapi-backend
+  POSTGRES_HOST: backend-homelab-db
+  POSTGRES_PORT: "5432"
+---
+apiVersion: v1
+kind: Secret
+metadata:
+  name: backend-homelab-secrets
+  namespace: dev
+data:
+  POSTGRES_PASSWORD: RHY3ZjNySjB4TUEzc0E3eHkyZlJOazhmMHBrajNVeHg=
+  POSTGRES_USER: cG9zdGdyZXM=
+type: Opaque
+---
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: backend-homelab
+  namespace: dev
+spec:
+  replicas: 1
+  selector:
+    matchLabels:
+      app: backend-homelab
+  template:
+    metadata:
+      labels:
+        app: backend-homelab
+    spec:
+      imagePullSecrets:
+      - name: ghcr-secret
+      containers:
+      - name: backend-homelab-
+        image: {{ image }}
+        ports:
+          - containerPort: 8990
+            protocol: TCP
+        args:
+            - sh
+            - -c
+            - piccolo migrations new all --auto && piccolo migrations forwards all && uvicorn fastapi_backend_app:app --host 0.0.0.0 --port 8000 
+        env:
+          - name: POSTGRES_DB
+            valueFrom:
+              configMapKeyRef:
+                key: POSTGRES_DB
+                name: backend-homelab-config
+          - name: POSTGRES_HOST
+            valueFrom:
+              configMapKeyRef:
+                key: POSTGRES_HOST
+                name: backend-homelab-config
+          - name: POSTGRES_PASSWORD
+            valueFrom:
+              secretKeyRef:
+                key: POSTGRES_PASSWORD
+                name: backend-homelab-secrets
+          - name: POSTGRES_PORT
+            valueFrom:
+              configMapKeyRef:
+                key: POSTGRES_PORT
+                name: backend-homelab-config
+          - name: POSTGRES_USER
+            valueFrom:
+              secretKeyRef:
+                key: POSTGRES_USER
+                name: backend-homelab-secrets
+        tty: true
+
+---
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: backend-homelab-postgres
+  namespace: dev
+spec:
+  replicas: 1
+  selector:
+    matchLabels:
+      app: backend-homelab-postgres
+  template:
+    metadata:
+      labels:
+        app: backend-homelab-postgres
+    spec:
+      containers:
+        - name: backend-homelab-postgres
+          image: postgres:16.3
+          imagePullPolicy: IfNotPresent
+          env:
+            - name: POSTGRES_DB
+              valueFrom:
+                configMapKeyRef:
+                  key: POSTGRES_DB
+                  name: backend-homelab-config
+            - name: POSTGRES_HOST
+              valueFrom:
+                configMapKeyRef:
+                  key: POSTGRES_HOST
+                  name: backend-homelab-config
+            - name: POSTGRES_PASSWORD
+              valueFrom:
+                secretKeyRef:
+                  key: POSTGRES_PASSWORD
+                  name: backend-homelab-secrets
+            - name: POSTGRES_PORT
+              valueFrom:
+                configMapKeyRef:
+                  key: POSTGRES_PORT
+                  name: backend-homelab-config
+            - name: POSTGRES_USER
+              valueFrom:
+                secretKeyRef:
+                  key: POSTGRES_USER
+                  name: backend-homelab-secrets
+          ports:
+          - containerPort: 5432
+            protocol: TCP
+          resources: {}
+          terminationMessagePath: /dev/termination-log
+          terminationMessagePolicy: File
+          volumeMounts:
+          - mountPath: /var/lib/postgresql/data
+            name: postgres-storage
+            subPath: postgres
+      dnsPolicy: ClusterFirst
+      restartPolicy: Always
+      schedulerName: default-scheduler
+      securityContext: {}
+      terminationGracePeriodSeconds: 30
+      volumes:
+      - name: postgres-storage
+        persistentVolumeClaim:
+          claimName: backend-homelab-db-pvc
+---
+apiVersion: v1
+kind: PersistentVolumeClaim
+metadata:
+  labels:
+    app: backend-homelab-db-pvc
+  name: backend-homelab-db-pvc
+  namespace: dev
+spec:
+  accessModes:
+  - ReadWriteOnce
+  resources:
+    requests:
+      storage: 1Gi
+  volumeMode: Filesystem
+  volumeName: 
+status:
+  accessModes:
+  - ReadWriteOnce
+  capacity:
+    storage: 1Gi
+  phase: Bound
+---
+apiVersion: v1
+kind: Service
+metadata:
+  name: backend-homelab-db
+  namespace: dev
+spec:
+  ports:
+    - name: "5432"
+      port: 5432
+      targetPort: 5432
+  selector:
+    app: backend-homelab-db
