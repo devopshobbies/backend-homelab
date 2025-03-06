@@ -1,0 +1,52 @@
+{
+    "fastapi_backend": {
+        "FavoriteMovie": [
+            {
+                "id": 1,
+                "name": "nightcrawler",
+                "poster_url": "https://upload.wikimedia.org/wikipedia/en/d/d4/Nightcrawlerfilm.jpg",
+                "rank": 0
+            },
+            {
+                "id": 2,
+                "name": "Uncut Gems",
+                "poster_url": "https://upload.wikimedia.org/wikipedia/en/a/a7/Uncut_Gems_poster.jpg",
+                "rank": 1
+            },
+            {
+                "id": 3,
+                "name": "Fight Club",
+                "poster_url": "https://upload.wikimedia.org/wikipedia/en/f/fc/Fight_Club_poster.jpg",
+                "rank": 2
+            }
+        ]
+    },
+    "session_auth": {
+        "SessionsBase": [
+            {
+                "id": 1,
+                "token": "3mjXk7Dg3IHSgiaU6FGo6aQ_teGyu9nYmtrmfaOpoO0",
+                "user_id": 1,
+                "expiry_date": "2025-03-06T11:03:34.451189",
+                "max_expiry_date": "2025-03-13T10:03:34.451189"
+            }
+        ]
+    },
+    "user": {
+        "BaseUser": [
+            {
+                "id": 1,
+                "username": "admin",
+                "password": "pbkdf2_sha256$600000$a2e9794d550994013e3bfeeec5b75083$e3eb81810c65d1a6dfee47fe6de5c04f854baca8b6217e244eeebfcdeb3208a1",
+                "first_name": "",
+                "last_name": "",
+                "email": "",
+                "active": true,
+                "admin": true,
+                "superuser": true,
+                "last_login": "2025-03-06T10:03:34.444409"
+            }
+        ]
+    },
+    "piccolo_admin": {}
+}
